@@ -1,0 +1,31 @@
+version: '3'
+
+vars:
+  # styles
+  tw_src: './static/css/src.css'
+  tw_dst: './static/css/out.css'
+  # build
+  target: './bin/bookly.exe'
+  mainfile: './cmd/app/main.go'
+
+env:
+  PORT: :8080
+
+tasks:
+  # building an app
+  build:
+    cmds:
+      - go build -o {{.target}} {{.mainfile}}
+    silent: true
+
+  # running an app
+  run:
+    cmds:
+      - go run {{.mainfile}}
+    silent: true
+
+  # compile styles with standalone tailwindcss
+  tailwind:
+    cmds:
+      - tailwindcss -i {{.tw_src}} -o {{.tw_dst}}
+    silent: true
