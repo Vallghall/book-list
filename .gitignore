@@ -1,5 +1,9 @@
 # IDEs
 .vscode/
+.idea/
+
+# ssl
+*.crt
 
 # build
 bin/

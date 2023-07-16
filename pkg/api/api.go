@@ -1,9 +1,12 @@
 package api
 
-import "github.com/gofiber/fiber/v2"
+import (
+	"github.com/Vallghall/book-list/configs"
+	"github.com/gofiber/fiber/v2"
+)
 
 // InitApp - initialize routes
-func InitApp() *fiber.App {
+func InitApp(c *configs.Conf) *fiber.App {
 	app := fiber.New(fiber.Config{
 		PassLocalsToViews:     true,
 		DisableStartupMessage: true,

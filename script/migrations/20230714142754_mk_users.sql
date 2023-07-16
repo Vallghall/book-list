@@ -55,7 +55,7 @@ end
 $function$
     language plpgsql volatile;
 
-create or replace function k_user.create_user(_args _user)
+create or replace function k_user.create_user(_args k_user._user)
     returns table
             (
                 id           uuid,

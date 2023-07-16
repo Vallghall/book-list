@@ -1,0 +1,11 @@
+db:
+  host: db.rjvqrigxtbwnnektmvdz.supabase.co
+  name: postgres
+  port: 5432
+  user: postgres
+  password: supabaseisthe1
+  ssl: verify-ca
+  sslrootsert: sp-ca.crt
+
+app:
+  port: :8080
