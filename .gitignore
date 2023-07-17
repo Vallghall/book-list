@@ -2,8 +2,8 @@
 .vscode/
 .idea/
 
-# ssl
-*.crt
+# configs
+./configs/config.yaml
 
 # build
 bin/

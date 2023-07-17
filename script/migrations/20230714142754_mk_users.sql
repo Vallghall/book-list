@@ -7,13 +7,13 @@ comment on schema k_user
 
 create table if not exists k_user.users
 (
-    id          uuid primary key default gen_random_uuid(),
+    id          uuid primary key     default gen_random_uuid(),
     nickname    text,
     first_name  text        not null,
-    last_name   text,
+    last_name   text        not null,
     email       text unique not null check (email like '%@%.%'),
-    created_at  timestamptz      default now(),
-    modified_at timestamptz      default now()
+    created_at  timestamptz not null default now(),
+    modified_at timestamptz not null default now()
 );
 
 comment on table k_user.users
@@ -30,13 +30,13 @@ create type k_user._user as
 create or replace function k_user.get_user_by_id(_id uuid)
     returns table
             (
-                id           uuid,
-                nickname     text,
-                first_schema text,
-                last_name    text,
-                email        text,
-                created_at   timestamptz,
-                modified_at  timestamptz
+                id          uuid,
+                nickname    text,
+                first_name  text,
+                last_name   text,
+                email       text,
+                created_at  timestamptz,
+                modified_at timestamptz
             )
 as
 $function$
@@ -58,13 +58,13 @@ $function$
 create or replace function k_user.create_user(_args k_user._user)
     returns table
             (
-                id           uuid,
-                nickname     text,
-                first_schema text,
-                last_name    text,
-                email        text,
-                created_at   timestamptz,
-                modified_at  timestamptz
+                id          uuid,
+                nickname    text,
+                first_name  text,
+                last_name   text,
+                email       text,
+                created_at  timestamptz,
+                modified_at timestamptz
             )
 as
 $function$
@@ -74,9 +74,9 @@ begin
     perform from k_user.users as u where u.email = _args.email;
     if FOUND then raise exception 'USER_ALREADY_EXISTS'; end if;
 
-    insert into k_user.users (nickname, first_name, last_name, email)
+    insert into k_user.users as t(nickname, first_name, last_name, email)
     values (_args.nickname, _args.first_name, _args.last_name, _args.email)
-    returning id into _id;
+    returning t.id into _id;
 
     return query select * from k_user.get_user_by_id(_id);
 end
@@ -86,8 +86,6 @@ $function$
 -- +goose StatementEnd
 
 
-
-
 -- +goose Down
 -- +goose StatementBegin
 
@@ -95,7 +93,7 @@ drop function if exists k_user.create_user(k_user._user);
 
 drop function if exists k_user.get_user_by_id(_id uuid);
 
-drop type if exists  k_user._user;
+drop type if exists k_user._user;
 
 drop table k_user.users;
 

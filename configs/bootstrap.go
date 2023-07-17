@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/Vallghall/book-list/pkg/store"
+	"github.com/Vallghall/book-list/pkg/store/postgres"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 	"github.com/pressly/goose/v3"
@@ -24,20 +26,19 @@ type DBConf struct {
 	User     string `yaml:"user"`
 	Password string `yaml:"password"`
 	SSLOpt   string `yaml:"ssl"`
-	SSlCert  string `yaml:"sslrootsert"`
+	//SSlCert  string `yaml:"sslrootsert"`
 }
 
 // ConnString returns a connection string in a required format
 func (c *DBConf) ConnString() string {
 	return fmt.Sprintf(
-		"postgresql://%s:%s@%s:%s/%s?sslmode=%s&sslrootcert=%s",
+		"postgresql://%s:%s@%s:%s/%s?sslmode=%s",
 		c.User,
 		c.Password,
 		c.Host,
 		c.Port,
 		c.Name,
-		"verify-ca",
-		c.SSlCert,
+		c.SSLOpt,
 	)
 }
 
@@ -51,6 +52,10 @@ type Conf struct {
 	*DBConf  `yaml:"db"`
 	*AppConf `yaml:"app"`
 	dbHandle *sqlx.DB `yaml:"-"`
+}
+
+func (c *Conf) Store() store.Store {
+	return postgres.New(c.dbHandle)
 }
 
 // Bootstrap - bootstraps thr application loading migrations etc

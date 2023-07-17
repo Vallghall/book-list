@@ -6,7 +6,9 @@ vars:
   tw_dst: './static/css/out.css'
   # build
   target: './bin/bookly.exe'
-  mainfile: './cmd/app/main.go'
+  mainfile: './main.go'
+  # migrations
+  migrations-dir: './script/migrations'
 
 env:
   PORT: :8080
@@ -23,6 +25,10 @@ tasks:
     cmds:
       - go run {{.mainfile}}
     silent: true
+
+  # create new migration
+  new-mig:
+    cmd: goose -dir {{.migrations-dir}} create {{.CLI_ARGS}} sql
 
   # compile styles with standalone tailwindcss
   tailwind:
