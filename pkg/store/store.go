@@ -14,6 +14,6 @@ type Store interface {
 	CreateAuthor(userID uuid.UUID, c *types.AuthorCreation) (*types.Author, error)
 	GetAuthorByID(authorID uuid.UUID) (*types.Author, error)
 
-	CreateBook(c *types.BookCreation) (*types.Book, error)
+	CreateBook(userID uuid.UUID, creation *types.BookCreation) (*types.Book, error)
 	GetBookByID(bookID uuid.UUID) (*types.Book, error)
 }

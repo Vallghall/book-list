@@ -1,22 +1,35 @@
 package configs
 
 import (
-	"embed"
+	"flag"
 	"fmt"
 	"os"
 
+	"github.com/Vallghall/book-list/pkg/models"
 	"github.com/Vallghall/book-list/pkg/store"
 	"github.com/Vallghall/book-list/pkg/store/postgres"
-	"github.com/jmoiron/sqlx"
-	_ "github.com/lib/pq"
-	"github.com/pressly/goose/v3"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 	"gopkg.in/yaml.v3"
+	pg "gorm.io/driver/postgres"
+	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 const (
 	configPath = "configs/config.yaml"
-	driver     = "postgres"
 )
+
+var (
+	// disableMigration - flag that disables gorm auto-migration
+	// for bootstrap performance boost
+	disableMigration bool
+)
+
+func init() {
+	flag.BoolVar(&disableMigration, "no-migration", false, "Disables gorm auto-migration for bootstrap performance boost")
+	flag.Parse()
+}
 
 // DBConf - wrapper for database configuration
 type DBConf struct {
@@ -26,7 +39,6 @@ type DBConf struct {
 	User     string `yaml:"user"`
 	Password string `yaml:"password"`
 	SSLOpt   string `yaml:"ssl"`
-	//SSlCert  string `yaml:"sslrootsert"`
 }
 
 // ConnString returns a connection string in a required format
@@ -44,22 +56,42 @@ func (c *DBConf) ConnString() string {
 
 // AppConf - wrapper for app configuration
 type AppConf struct {
-	Port string `yaml:"port"`
+	Port       string `yaml:"port"`
+	DBLogLevel int    `yaml:"db-log-level"`
+	HLogLevel  string `yaml:"h-log-level"`
+	SigningKey string `yaml:"signing-key"`
 }
 
 // Conf - represents whole project's configs
 type Conf struct {
 	*DBConf  `yaml:"db"`
 	*AppConf `yaml:"app"`
-	dbHandle *sqlx.DB `yaml:"-"`
+	db       *gorm.DB
+	logger   *zap.Logger
 }
 
+// Store - Repository instance getter
 func (c *Conf) Store() store.Store {
-	return postgres.New(c.dbHandle)
+	return postgres.New(c.db)
 }
 
-// Bootstrap - bootstraps thr application loading migrations etc
-func Bootstrap(migrations embed.FS) (*Conf, error) {
+// LogLevel - validates log level parsed from congigs
+// and returns it if it is within [1;4] range
+func (c *Conf) LogLevel() (logger.LogLevel, error) {
+	if c.DBLogLevel < 0 || c.DBLogLevel > 4 {
+		return 0, fmt.Errorf("invalid log level: %d", c.DBLogLevel)
+	}
+
+	return logger.LogLevel(c.DBLogLevel), nil
+}
+
+// HandlerLogLevel - logger getter
+func (c *Conf) HandlerLogLevel() *zap.Logger {
+	return c.logger
+}
+
+// Bootstrap - bootstraps the application loading migrations etc
+func Bootstrap() (*Conf, error) {
 	f, err := os.Open(configPath)
 	if err != nil {
 		return nil, err
@@ -67,32 +99,42 @@ func Bootstrap(migrations embed.FS) (*Conf, error) {
 	defer f.Close()
 
 	c := new(Conf)
-
 	err = yaml.NewDecoder(f).Decode(c)
 	if err != nil {
 		return nil, err
 	}
 
-	c.dbHandle, err = getConnection(c.DBConf)
+	lvl, err := c.LogLevel()
+	if err != nil {
+		return nil, err
+	}
+	c.db, err = gorm.Open(
+		pg.Open(c.ConnString()),
+		&gorm.Config{
+			Logger: logger.Default.LogMode(lvl),
+		})
 	if err != nil {
 		return nil, err
 	}
 
-	goose.SetBaseFS(migrations)
-	err = goose.SetDialect(driver)
+	if !disableMigration {
+		err = c.db.AutoMigrate(&models.User{}, &models.Author{}, &models.Book{})
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	hLevel, err := zapcore.ParseLevel(c.HLogLevel)
 	if err != nil {
 		return nil, err
 	}
 
-	err = goose.Up(c.dbHandle.DB, "script/migrations")
+	lc := zap.NewProductionConfig()
+	lc.Level.SetLevel(hLevel)
+	c.logger, err = lc.Build()
 	if err != nil {
 		return nil, err
 	}
 
 	return c, nil
-}
-
-// getConnection - returns a handle to a database
-func getConnection(conf *DBConf) (*sqlx.DB, error) {
-	return sqlx.Connect(driver, conf.ConnString())
 }

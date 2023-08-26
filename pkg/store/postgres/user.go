@@ -1,25 +1,33 @@
 package postgres
 
 import (
+	"github.com/Vallghall/book-list/pkg/models"
 	"github.com/Vallghall/book-list/pkg/types"
 	uuid "github.com/satori/go.uuid"
 )
 
 // CreateUser - user creation
 func (s *DB) CreateUser(c *types.UserCreation) (*types.User, error) {
-	u := new(types.User)
-	err := s.db.Get(u,
-		"select * from k_user.create_user(($1,$2,$3,$4)::k_user._user);",
-		c.Nickname, c.FirstName, c.LastName, c.Email,
-	)
+	u := &models.User{
+		UserName:  c.UserName,
+		FirstName: c.FirstName.NullString,
+		LastName:  c.LastName.NullString,
+		Email:     c.Email,
+	}
 
-	return u, err
+	err := s.db.Create(u).Error
+
+	return u.ToTarget(), err
 }
 
 // GetUser - get user by id
 func (s *DB) GetUser(userID uuid.UUID) (*types.User, error) {
-	u := new(types.User)
-	err := s.db.Get(u, "select * from k_user.get_user_by_id($1::uuid);", userID)
+	u := &models.User{ID: userID}
+	err := s.db.First(u).Error
 
-	return u, err
+	if err != nil {
+		return nil, err
+	}
+
+	return u.ToTarget(), nil
 }

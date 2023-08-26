@@ -4,6 +4,7 @@
 
 # configs
 ./configs/config.yaml
+.env
 
 # build
 bin/

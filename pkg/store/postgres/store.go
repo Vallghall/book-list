@@ -2,13 +2,16 @@ package postgres
 
 import (
 	"github.com/Vallghall/book-list/pkg/store"
-	"github.com/jmoiron/sqlx"
+	"gorm.io/gorm"
 )
 
+// interface guard
+var _ store.Store = (*DB)(nil)
+
 type DB struct {
-	db *sqlx.DB
+	db *gorm.DB
 }
 
-func New(db *sqlx.DB) store.Store {
+func New(db *gorm.DB) store.Store {
 	return &DB{db}
 }
