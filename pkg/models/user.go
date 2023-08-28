@@ -9,11 +9,12 @@ import (
 
 // User - DAO for users
 type User struct {
-	ID        uuid.UUID `gorm:"type:uuid;primary_key;default:gen_random_uuid()"`
-	UserName  string    `gorm:"unique"`
-	FirstName sql.NullString
-	LastName  sql.NullString
-	Email     string `gorm:"check:(email like '%@%.%')"`
+	ID           uuid.UUID `gorm:"type:uuid;primary_key;default:gen_random_uuid()"`
+	UserName     string    `gorm:"unique"`
+	FirstName    sql.NullString
+	LastName     sql.NullString
+	Email        string `gorm:"check:(email like '%@%.%');unique"`
+	PasswordHash string
 }
 
 // ToTarget - transforms *models.User to *types.User
@@ -24,5 +25,6 @@ func (u *User) ToTarget() *types.User {
 		FirstName: u.FirstName.String,
 		LastName:  u.LastName.String,
 		Email:     u.Email,
+		Password:  u.PasswordHash,
 	}
 }

@@ -16,6 +16,7 @@ func InitApp(c *configs.Conf) *fiber.App {
 		Views:             engine(),
 	})
 
+	// general middleware
 	app.Use(
 		mw.WithDB(repo),
 		mw.WithLogger(c.HandlerLogLevel()),
@@ -28,14 +29,21 @@ func InitApp(c *configs.Conf) *fiber.App {
 
 	auth := app.Group("/auth")
 	{
+		// POST /auth/sign-in - login page
+		auth.Post("/sign-in", handlers.NotImplemented)
+		// POST /auth/sign-up - signing-up page
+		auth.Post("/sign-up", handlers.NotImplemented)
+
 		// POST /auth/user - user creation
 		auth.Post("/user", handlers.CreateUser)
-		// GET /auth/user/:id
+		// GET /auth/user/:id - user getting by id
 		auth.Get("/user/:id", handlers.GetUser)
+		// POST /auth/login/ - logging in
+		auth.Post("/login", handlers.Login(c.SigningKey))
 	}
 
 	// service logic endpoints
-	service := app.Group("/service")
+	service := app.Group("/service", mw.WithJWTAuth(c.SigningKey))
 	{
 		// author related endpoints
 		authors := service.Group("/authors")

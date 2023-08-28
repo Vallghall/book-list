@@ -11,6 +11,7 @@ type UserCreation struct {
 	FirstName null.String `json:"first_name"`
 	LastName  null.String `json:"last_name"`
 	Email     string      `json:"email"`
+	Password  string      `json:"password"`
 }
 
 // User - represents info about users
@@ -20,4 +21,5 @@ type User struct {
 	FirstName string    `json:"first_name,omitempty"`
 	LastName  string    `json:"last_name,omitempty"`
 	Email     string    `json:"email"`
+	Password  string    `json:"-"`
 }

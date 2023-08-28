@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/Vallghall/book-list/pkg/models"
 	"github.com/Vallghall/book-list/pkg/store"
@@ -92,6 +93,12 @@ func (c *Conf) HandlerLogLevel() *zap.Logger {
 
 // Bootstrap - bootstraps the application loading migrations etc
 func Bootstrap() (*Conf, error) {
+	var err error
+	time.Local, err = time.LoadLocation("Europe/Moscow")
+	if err != nil {
+		return nil, err
+	}
+
 	f, err := os.Open(configPath)
 	if err != nil {
 		return nil, err

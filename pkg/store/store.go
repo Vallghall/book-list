@@ -10,6 +10,8 @@ import (
 type Store interface {
 	CreateUser(c *types.UserCreation) (*types.User, error)
 	GetUser(userID uuid.UUID) (*types.User, error)
+	FindUserByCredentials(username, password string) (*types.User, error)
+	FindUserByUsername(username string) (*types.User, error)
 
 	CreateAuthor(userID uuid.UUID, c *types.AuthorCreation) (*types.Author, error)
 	GetAuthorByID(authorID uuid.UUID) (*types.Author, error)
