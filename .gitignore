@@ -3,9 +3,10 @@
 .idea/
 
 # configs
-./configs/config.yaml
+config.yaml
 .env
 
 # build
 bin/
 ./static/css/out.css
+htmx.min.js

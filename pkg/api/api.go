@@ -13,7 +13,7 @@ func InitApp(c *configs.Conf) *fiber.App {
 	app := fiber.New(fiber.Config{
 		PassLocalsToViews: true,
 		ErrorHandler:      fiber.DefaultErrorHandler,
-		Views:             engine(),
+		Views:             engine(c.TemplatePath, c.TemplateExtension),
 	})
 
 	// general middleware

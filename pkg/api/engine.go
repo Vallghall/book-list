@@ -6,8 +6,6 @@ import (
 )
 
 // engine - creates template engine
-func engine() fiber.Views {
-	e := django.New("./static", ".html")
-
-	return e
+func engine(path, tmplext string) fiber.Views {
+	return django.New(path, tmplext)
 }

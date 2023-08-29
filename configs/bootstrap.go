@@ -57,10 +57,12 @@ func (c *DBConf) ConnString() string {
 
 // AppConf - wrapper for app configuration
 type AppConf struct {
-	Port       string `yaml:"port"`
-	DBLogLevel int    `yaml:"db-log-level"`
-	HLogLevel  string `yaml:"h-log-level"`
-	SigningKey string `yaml:"signing-key"`
+	Port              string `yaml:"port"`
+	DBLogLevel        int    `yaml:"db-log-level"`
+	HLogLevel         string `yaml:"h-log-level"`
+	SigningKey        string `yaml:"signing-key"`
+	TemplatePath      string `yaml:"template-path"`
+	TemplateExtension string `yaml:"template-extension"`
 }
 
 // Conf - represents whole project's configs

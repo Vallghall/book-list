@@ -32,12 +32,12 @@ func WithJWTAuth(skey string) fiber.Handler {
 		// retrieving refresh token
 		token = c.Cookies(authmw.RefreshCookieName)
 		if token == "" {
-			return c.Redirect("", http.StatusTemporaryRedirect)
+			return c.Redirect(redirectPath, http.StatusTemporaryRedirect)
 		}
 
 		uid, ok = authmw.ParseToken(token, skey)
 		if !ok {
-			return c.Redirect("", http.StatusTemporaryRedirect)
+			return c.Redirect(redirectPath, http.StatusTemporaryRedirect)
 		}
 
 		if err := authmw.WriteTokenPair(c, uid, skey); err != nil {
